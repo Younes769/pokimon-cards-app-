@@ -1,48 +1,63 @@
 import React from "react";
 import PokeDex from "./PokeDex";
-import charizard from "./pics/charizard.png";
-import pikachu from "./pics/pikachu.png";
-import squirtle from "./pics/squirtle.png";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Pagination from "./Pagination";
 
 function App() {
-  const pokemonCards = [
-    {
-      id: 1,
-      name: "Pikachu",
-      images: {
-        im: pikachu,
-      },
-      hp: 35,
-      attack: 55,
-      type: "Electric",
-    },
-    {
-      id: 2,
-      name: "Charizard",
-      images: {
-        im: charizard,
-      },
-      hp: 78,
-      attack: 84,
-      type: "Fire",
-    },
-    {
-      id: 3,
-      name: "Squirtle",
-      images: {
-        im: squirtle,
-      },
-      hp: 44,
-      attack: 48,
-      type: "Water",
-    },
-  ];
+  const [pokemonList, setPokemonList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [url, setUrl] = useState("https://pokeapi.co/api/v2/pokemon/");
+  const [nextUrl, setNextUrl] = useState("");
+  const [prevUrl, setPrevUrl] = useState("");
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [pokemonInfo, setPokemonInfo] = useState([]);
+
+  const changeUrl = (newUrl) => {
+    setUrl(newUrl);
+  };
+
+  const pokemonFetch = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(url);
+      console.log("resulte first url :", res);
+      setNextUrl(res.data.next);
+      setPrevUrl(res.data.previous);
+      getPokemons(res.data.results);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  };
+
+  const getPokemons = async (res) => {
+    const pokemonData = await Promise.all(
+      res.map(async (pokemon) => {
+        const result = await axios.get(pokemon.url);
+        return result.data;
+        console.log(result);
+      })
+    );
+    setPokemonList(pokemonData);
+  };
+
+  useEffect(() => {
+    pokemonFetch();
+  }, [url]);
 
   return (
     <div>
-      <PokeDex pokemons={pokemonCards} />
+    {loading ? <h1>Loading...</h1> : <PokeDex pokemonList={pokemonList} />}
+    <div className="pagination-container">
+      {prevUrl && (
+        <Pagination text="Previous" changeUrl={changeUrl} url={prevUrl} />
+      )}
+      {nextUrl && <Pagination text="Next" changeUrl={changeUrl} url={nextUrl} />}
     </div>
+  </div>
+    
   );
 }
-
 export default App;

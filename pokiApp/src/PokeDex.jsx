@@ -1,11 +1,11 @@
 import React from "react";
 import PokeCard from "./PokeCard";
 
-function PokeDex({ pokemons }) {
+function PokeDex({ pokemonList }) {
   return (
     <div className="pokedex">
-      {pokemons.map((pokemon) => (
-        <PokeCard key={pokemon.id} pokemon={pokemon} />
+      {pokemonList.map((pokemon,index) => (
+        <PokeCard key={index} pokemon={pokemon} />
       ))}
     </div>
   );
